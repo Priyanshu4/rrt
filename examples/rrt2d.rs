@@ -60,12 +60,12 @@ async fn main() {
     let goal_tolerance = 5.0;
 
     // Define the steering function.
-    let steering = rrt::steering::EuclideanSteering::new(20.0);
+    let steering = rrt::EuclideanSteering::new(20.0);
 
     // Use a uniform sampling distribution with 5% goal bias.
     let ranges = [(0.0, SCREEN_WIDTH as f32), (0.0, SCREEN_HEIGHT as f32)];
     let goal_bias = 0.05;
-    let result = rrt::sampling::GoalBiasedUniformDistribution::new(ranges, goal, goal_bias);
+    let result = rrt::GoalBiasedUniformDistribution::new(ranges, goal, goal_bias);
     if result.is_err() {
         println!(
             "Error creating sampling distribution: {}",

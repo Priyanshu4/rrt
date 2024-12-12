@@ -12,3 +12,5 @@ pub use crate::collision::ValidityChecker;
 pub use crate::neighbors::*;
 pub use crate::point::*;
 pub use crate::rrt::RRT;
+pub use crate::sampling::*;
+pub use crate::steering::*;
