@@ -3,13 +3,45 @@
 //! ## Usage
 //! Run the program with:
 //! ```bash
-//! cargo run --example rrt2d
+//! cargo run --example rrt2d -- --save-path <save_path> --solution-frames <solution_frames>
 //! ```
 
+use clap::Parser;
+use image::{ImageBuffer, Rgba};
 use macroquad::prelude::*;
 
 const SCREEN_HEIGHT: i32 = 600;
 const SCREEN_WIDTH: i32 = 600;
+
+#[derive(Parser)]
+struct Args {
+    /// The path to save the images to
+    #[arg(long, default_value = "frames")]
+    save_path: String,
+
+    /// The number of frames to save for the solution
+    #[arg(long, default_value_t = 100)]
+    solution_frames: usize,
+}
+
+async fn save_frame(save_path: &str, frame_number: usize) {
+    let screen_image = macroquad::texture::get_screen_data();
+    let width = screen_image.width as u32;
+    let height = screen_image.height as u32;
+
+    // Convert Macroquad's image to an ImageBuffer from the `image` crate
+    let buffer = ImageBuffer::<Rgba<u8>, _>::from_raw(
+        width,
+        height,
+        screen_image.bytes.to_vec(), // Raw pixel data
+    )
+    .expect("Failed to create image buffer");
+
+    // Save the buffer to a PNG file
+    buffer
+        .save(format!("{}/frame_{:03}.png", save_path, frame_number))
+        .expect("Failed to save image");
+}
 
 fn window_conf() -> Conf {
     Conf {
@@ -24,6 +56,8 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    let args = Args::parse();
+
     // Define the obstacles
     let spheres = vec![
         rrt::collision::Sphere {
@@ -85,6 +119,9 @@ async fn main() {
         steering,
     );
 
+    let mut frame_count = 0;
+    let mut n_nodes = 0;
+
     loop {
         // Clear the screen
         clear_background(WHITE);
@@ -137,6 +174,21 @@ async fn main() {
                 let a = shortened_path[i];
                 let b = shortened_path[i + 1];
                 draw_line(a[0], a[1], b[0], b[1], 2.0, GREEN);
+            }
+        }
+
+        // Save the frame if the number of nodes has changed.
+        if n_nodes != nodes.len() {
+            frame_count += 1;
+            n_nodes = nodes.len();
+            save_frame(&args.save_path, frame_count).await;
+
+            // If the solution was found, make extra frames to show the solution.
+            if rrt.solved() {
+                for _ in 0..args.solution_frames {
+                    frame_count += 1;
+                    save_frame(&args.save_path, frame_count).await;
+                }
             }
         }
 

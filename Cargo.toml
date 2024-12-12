@@ -11,3 +11,5 @@ kiddo = "5.0"       # For kd-trees
 
 [dev-dependencies]
 macroquad = "0.3"   # Used only for animations in examples
+image = "0.24"
+clap = { version = "4.5.23", features = ["derive"] }
