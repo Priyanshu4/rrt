@@ -91,7 +91,7 @@ impl<F: Float, const N: usize> NearestNeighbors<F, N> for LinearNearestNeighbors
     fn within_radius(&self, point: &Point<F, N>, radius: F) -> Vec<usize> {
         self.points
             .iter()
-            .filter(|(p, _)| euclidean_distance_squared(&p, &point) <= radius)
+            .filter(|(p, _)| euclidean_distance_squared(&p, &point) <= radius * radius)
             .map(|(_, i)| *i)
             .collect()
     }
@@ -127,7 +127,7 @@ impl<F: Float + Axis, const N: usize> NearestNeighbors<F, N> for KdTreeNearestNe
 
     fn within_radius(&self, point: &Point<F, N>, radius: F) -> Vec<usize> {
         self.kdtree
-            .within::<SquaredEuclidean>(point.coords(), radius)
+            .within::<SquaredEuclidean>(point.coords(), radius * radius)
             .iter()
             .map(|n| n.item)
             .collect()
